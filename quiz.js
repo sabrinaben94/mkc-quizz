@@ -4,7 +4,7 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 // CONFIGURATION
-const MAILERLITE_API_KEY = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiI0IiwianRpIjoiNGJiMzMwNDJjMjdkNGNiODllOGNiYWJkMDAxNTM2NDcxNTQxZDFjZmE1MTk1YTdjMjBhMDYyYzQzZmE5ZjUwMTE1MGY4MDhjYzJkMzQxNGIiLCJpYXQiOjE3Njg2ODE4OTYuNDMyOTE4LCJuYmYiOjE3Njg2ODE4OTYuNDMyOTIsImV4cCI6NDkyNDM1NTQ5Ni40MjYyNTEsInN1YiI6IjE2ODI2MjQiLCJzY29wZXMiOltdfQ.p27dK3BbF9QpAltwrgQEBLHMq4LzoQMvCBx2ToT2KDzMptPjZFpdPMRiz1M-oIHkyGyHrvLG3oc4zV0IF15SwWYy6p3Lr1I4XfHkEC4l0h2tzehbs9ly3SrsgvFfSKSg6mWjxuEvKhe95DlAG2x-u1RfW8uu8Y_6xWkoZe0ALoLF7NrbKd1ToVZ9B588XU1QUJY_5Enxse3rTmlM2isAmPMx4-we-mratwNJNJY5hyjtzlfIyl8E1ZeNrw4qS4ZX42GMkhd3uZg6-jYhoBvLf9QrOF8wxawaSXiAPFCfAe0EfRcbybfXLGnYBCxlHlV_yVADHG4g6E5mAC3EgHdGqjzMrjQXk-p2aN6aNosNXjg7FLfAC8gyvWQbwQQVWa2LZ28eQRPaVat5wrVUusA-bpFsZ042ZYcPiJNnRsRt-1YkEKoptdA7wPrtuVbeqyPGI4LdQJywzPjyCdErAzSYtURYBqkDj3e8g3CF9iNVWfeY69-VcmqRaF0OnylOy2dZtqVJntyxsP5QG8h3RUiT75qoLzNJ-ET4duLqmCsH8hBNFko00Zcij3aU3YAiBug0ZGRGUV66-aNvAy6rtpML-OD1Ktzfnj-lCoJ9RzxGgCIQXP992KkFaY-t5mn9Hb5f3VqdrAwkyf2c0pUny385pNLI799U3gTr_eptTKhcyzA';
+// La clé API MailerLite est sécurisée côté serveur (variable d'environnement Netlify)
 const MAILERLITE_GROUP_ID = '179231788491605801';
 
 // PROGRAMMES
@@ -871,14 +871,11 @@ function getProspectSegment(recommendation) {
 async function sendToMailerLite(recommendation) {
     const a = quizState.answers;
     const segment = getProspectSegment(recommendation);
-    
-    // Groupes : le groupe principal + le groupe de segment (si l'ID existe)
+
     const groups = [MAILERLITE_GROUP_ID];
     const segmentGroupId = MAILERLITE_SEGMENT_GROUPS[segment];
-    if (segmentGroupId) {
-        groups.push(segmentGroupId);
-    }
-    
+    if (segmentGroupId) groups.push(segmentGroupId);
+
     const subscriberData = {
         email: a.email,
         fields: {
@@ -900,24 +897,21 @@ async function sendToMailerLite(recommendation) {
         groups: groups,
         status: 'active'
     };
-    
+
     try {
-        const response = await fetch('https://connect.mailerlite.com/api/subscribers', {
+        const response = await fetch('/.netlify/functions/subscribe', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${MAILERLITE_API_KEY}`
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(subscriberData)
         });
-        
+
         if (!response.ok) {
-            console.error('MailerLite error:', await response.text());
+            console.error('Erreur inscription:', await response.text());
         } else {
-            console.log('MailerLite: subscriber added to segment', segment);
+            console.log('Inscription réussie, segment:', segment);
         }
     } catch (error) {
-        console.error('MailerLite error:', error);
+        console.error('Erreur réseau:', error);
     }
 }
 
