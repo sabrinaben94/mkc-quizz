@@ -46,7 +46,7 @@ const PROGRAMMES = {
         titre: 'MKC Transformation + Diagnostic Nutritionnel',
         sous_titre: 'Programme complet avec plan nutritionnel personnalisé par ta coach',
         lien_info: 'https://www.montoyacoaching.fr/pertedepoids',
-        lien_paiement: 'https://www.montoyacoaching.fr/',
+        lien_paiement: 'https://buy.stripe.com/14AfZgh2S9cj6x54mc3840g',
         prix: '240€',
         prix_mensuel: '60€/mois en 4x sans frais',
         isOnApp: true
