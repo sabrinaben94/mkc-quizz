@@ -1,730 +1,1001 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz | Montoya Coaching</title>
-    <meta name="description" content="Réponds à quelques questions et découvre le programme de coaching qui te correspond le mieux.">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div class="quiz-container">
-        <header class="quiz-header">
-            <img src="https://static.wixstatic.com/media/9b535b_094bd4c022154e43bb1112fa3b2a0639~mv2.png/v1/fill/w_560,h_256,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/Logo_Montoya_Coaching_NOIR4.png" alt="Montoya Coaching" class="header-logo">
-        </header>
+/* ═══════════════════════════════════════════════════════════════════════════
+   MONTOYA COACHING - QUIZ LOGIC V4.1
+   Version optimisée avec corrections
+   ═══════════════════════════════════════════════════════════════════════════ */
 
-        <div class="progress-container" id="progressContainer">
-            <div class="progress-bar" id="progressBar"></div>
-            <span class="progress-text" id="progressText">1 / 12</span>
+// CONFIGURATION
+const MAILERLITE_API_KEY = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiI0IiwianRpIjoiNGJiMzMwNDJjMjdkNGNiODllOGNiYWJkMDAxNTM2NDcxNTQxZDFjZmE1MTk1YTdjMjBhMDYyYzQzZmE5ZjUwMTE1MGY4MDhjYzJkMzQxNGIiLCJpYXQiOjE3Njg2ODE4OTYuNDMyOTE4LCJuYmYiOjE3Njg2ODE4OTYuNDMyOTIsImV4cCI6NDkyNDM1NTQ5Ni40MjYyNTEsInN1YiI6IjE2ODI2MjQiLCJzY29wZXMiOltdfQ.p27dK3BbF9QpAltwrgQEBLHMq4LzoQMvCBx2ToT2KDzMptPjZFpdPMRiz1M-oIHkyGyHrvLG3oc4zV0IF15SwWYy6p3Lr1I4XfHkEC4l0h2tzehbs9ly3SrsgvFfSKSg6mWjxuEvKhe95DlAG2x-u1RfW8uu8Y_6xWkoZe0ALoLF7NrbKd1ToVZ9B588XU1QUJY_5Enxse3rTmlM2isAmPMx4-we-mratwNJNJY5hyjtzlfIyl8E1ZeNrw4qS4ZX42GMkhd3uZg6-jYhoBvLf9QrOF8wxawaSXiAPFCfAe0EfRcbybfXLGnYBCxlHlV_yVADHG4g6E5mAC3EgHdGqjzMrjQXk-p2aN6aNosNXjg7FLfAC8gyvWQbwQQVWa2LZ28eQRPaVat5wrVUusA-bpFsZ042ZYcPiJNnRsRt-1YkEKoptdA7wPrtuVbeqyPGI4LdQJywzPjyCdErAzSYtURYBqkDj3e8g3CF9iNVWfeY69-VcmqRaF0OnylOy2dZtqVJntyxsP5QG8h3RUiT75qoLzNJ-ET4duLqmCsH8hBNFko00Zcij3aU3YAiBug0ZGRGUV66-aNvAy6rtpML-OD1Ktzfnj-lCoJ9RzxGgCIQXP992KkFaY-t5mn9Hb5f3VqdrAwkyf2c0pUny385pNLI799U3gTr_eptTKhcyzA';
+const MAILERLITE_GROUP_ID = '179231788491605801';
+
+// PROGRAMMES
+const PROGRAMMES = {
+    JANA: {
+        key: 'JANA',
+        titre: 'JANA Postpartum',
+        sous_titre: 'Programme de récupération post accouchement en 12 semaines',
+        lien_info: 'https://www.montoyacoaching.fr/postpartum-programme',
+        lien_paiement: 'https://www.montoyacoaching.fr/product-page/jana-post-partum-12-semaines-de-programme',
+        prix: '149€',
+        image: 'https://static.wixstatic.com/media/885b87_d15be53def6d4d33a5e99a0ebc510755~mv2.png',
+        isOnApp: true
+    },
+    GROSSESSE: {
+        key: 'GROSSESSE',
+        titre: 'MKC Grossesse',
+        sous_titre: 'Programme sportif et nutritionnel adapté à chaque trimestre',
+        lien_info: 'https://www.montoyacoaching.fr/product-page/makeachamp-grossesse',
+        lien_paiement: 'https://www.montoyacoaching.fr/product-page/makeachamp-grossesse',
+        prix: '159€',
+        image: 'https://static.wixstatic.com/media/885b87_cdef4b59a53e46498aa1324aef18632c~mv2.jpg',
+        isOnApp: true
+    },
+    MKC_SANS_DIAG: {
+        key: 'MKC_SANS_DIAG',
+        titre: 'MKC Transformation',
+        sous_titre: 'Programme complet perte de gras et définition musculaire',
+        lien_info: 'https://www.montoyacoaching.fr/pertedepoids',
+        lien_paiement: 'https://buy.stripe.com/14AfZgh2S9cj6x54mc3840g',
+        prix: '195€',
+        prix_mensuel: '48,75€/mois en 4x sans frais',
+        image_light: 'https://static.wixstatic.com/media/885b87_a2f7d6f7352f4a22959411b5c8a90def~mv2.webp',
+        image_heavy: 'https://static.wixstatic.com/media/885b87_e29b40ae0d2a4606bc8844f510e97a42~mv2.jpg',
+        isOnApp: true
+    },
+    MKC_AVEC_DIAG: {
+        key: 'MKC_AVEC_DIAG',
+        titre: 'MKC Transformation + Diagnostic Nutritionnel',
+        sous_titre: 'Programme complet avec plan nutritionnel personnalisé par ta coach',
+        lien_info: 'https://www.montoyacoaching.fr/pertedepoids',
+        lien_paiement: 'https://buy.stripe.com/14AfZgh2S9cj6x54mc3840g',
+        prix: '240€',
+        prix_mensuel: '60€/mois en 4x sans frais',
+        isOnApp: true
+    }
+};
+
+const EBOOKS = {
+    DECLIC: {
+        titre: 'Ebook DÉCLIC',
+        sous_titre: 'Le guide complet pour débloquer ta perte de poids',
+        prix: '39,90€',
+        lien: 'https://www.montoyacoaching.fr/ebooks-fitness-nutrition',
+        image: 'https://static.wixstatic.com/media/885b87_dd05d8d97dd04144923d61f7c6325917~mv2.jpg'
+    },
+    FESSIERS: {
+        titre: 'Ebook FESSIERS',
+        sous_titre: 'Les solutions pour débloquer tes résultats',
+        prix: '39,90€',
+        lien: 'https://www.montoyacoaching.fr/ebooks-fitness-nutrition',
+        image: 'https://static.wixstatic.com/media/9b535b_7e6002bae33f4f2ebbb5366dd4fe28ae~mv2.png'
+    },
+    GROSSESSE: {
+        titre: 'Manuel Essentiel Grossesse',
+        sous_titre: 'Sport, nutrition et conseils précieux',
+        prix: '29,90€',
+        prix_barre: '49,90€',
+        lien: 'https://www.montoyacoaching.fr/ebooks-fitness-nutrition',
+        image: 'https://static.wixstatic.com/media/885b87_cdef4b59a53e46498aa1324aef18632c~mv2.jpg'
+    }
+};
+
+// IMAGES TRANSFORMATION
+const IMAGES_TRANSFORMATION = {
+    postpartum_03: 'https://static.wixstatic.com/media/885b87_9c9ad37cc61440e3b0b78eeff6e2422b~mv2.jpg',
+    grossesse: 'https://static.wixstatic.com/media/885b87_cdef4b59a53e46498aa1324aef18632c~mv2.jpg',
+    definition_light: 'https://static.wixstatic.com/media/885b87_a2f7d6f7352f4a22959411b5c8a90def~mv2.webp',
+    perte_poids_heavy: 'https://static.wixstatic.com/media/885b87_e29b40ae0d2a4606bc8844f510e97a42~mv2.jpg',
+    perte_poids_heavy_2: 'https://static.wixstatic.com/media/885b87_d61b61682e1c4727923bb21fb83c704d~mv2.jpg'
+};
+
+// STATE
+const quizState = {
+    currentStep: 0,
+    answers: {},
+    stepsOrder: []
+};
+
+let currentFeatureSlide = 0;
+
+// STEPS ORDER BUILDER
+function buildStepsOrder() {
+    const a = quizState.answers;
+    const objectif = a.objectif_principal;
+    
+    let steps = ['0', '1'];
+    
+    if (objectif === 'enceinte') {
+        steps.push('1a', 'msg_grossesse', '2', '4', '8', '9', '10', '12', 'loading', 'result');
+    } else if (objectif === 'post_partum') {
+        steps.push('1b');
+        
+        if (a.delai_post_partum === 'moins_3_mois') {
+            steps.push('msg_pp_03', '2', '4', '8', '9', '10', '12', 'loading', 'result');
+        } else {
+            steps.push('2', '3', '4', '5', '6', '7', 'msg_progression', '8', '9', '10', '11', '12', 'loading', 'result');
+        }
+    } else {
+        steps.push('2', '4', '5', '6', '7', 'msg_progression', '8', '9', '10', '11', '12', 'loading', 'result');
+    }
+    
+    quizState.stepsOrder = steps;
+    return steps;
+}
+
+function getCurrentStepId() {
+    return quizState.stepsOrder[quizState.currentStep] || '0';
+}
+
+// NAVIGATION
+function showStep(stepIndex) {
+    buildStepsOrder();
+    
+    const stepId = quizState.stepsOrder[stepIndex];
+    if (!stepId) return;
+    
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    
+    const targetStep = document.querySelector(`.step[data-step="${stepId}"]`);
+    if (targetStep) {
+        targetStep.classList.add('active');
+        targetStep.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    
+    updateProgress();
+    updateNavButtons(stepId);
+    
+    if (stepId === 'loading') {
+        startLoading();
+    } else if (stepId === 'result') {
+        showResult();
+    } else if (stepId === 'msg_progression') {
+        updateProgressionDisplay();
+    }
+    
+    populateDynamicContent();
+}
+
+function nextStep() {
+    saveCurrentAnswers();
+    if (!validateCurrentStep()) return;
+    
+    buildStepsOrder();
+    
+    if (quizState.currentStep < quizState.stepsOrder.length - 1) {
+        quizState.currentStep++;
+        showStep(quizState.currentStep);
+    }
+}
+
+function prevStep() {
+    if (quizState.currentStep > 0) {
+        quizState.currentStep--;
+        showStep(quizState.currentStep);
+    }
+}
+
+function restartQuiz() {
+    quizState.currentStep = 0;
+    quizState.answers = {};
+    buildStepsOrder();
+    showStep(0);
+    
+    document.querySelectorAll('input').forEach(input => {
+        if (input.type === 'checkbox' || input.type === 'radio') {
+            input.checked = false;
+        } else {
+            input.value = '';
+        }
+    });
+    document.querySelectorAll('.option-card').forEach(card => card.classList.remove('selected'));
+}
+
+function saveCurrentAnswers() {
+    const currentStepId = getCurrentStepId();
+    const currentStep = document.querySelector(`.step[data-step="${currentStepId}"]`);
+    if (!currentStep) return;
+    
+    currentStep.querySelectorAll('input[type="radio"]:checked').forEach(input => {
+        quizState.answers[input.name] = input.value;
+    });
+    
+    const checkboxGroups = {};
+    currentStep.querySelectorAll('input[type="checkbox"]').forEach(input => {
+        if (!checkboxGroups[input.name]) checkboxGroups[input.name] = [];
+        if (input.checked) checkboxGroups[input.name].push(input.value);
+    });
+    Object.entries(checkboxGroups).forEach(([name, values]) => {
+        quizState.answers[name] = values;
+    });
+    
+    currentStep.querySelectorAll('input[type="text"], input[type="number"], input[type="email"]').forEach(input => {
+        if (input.value) quizState.answers[input.name || input.id] = input.value;
+    });
+}
+
+function validateCurrentStep() {
+    const currentStepId = getCurrentStepId();
+    const currentStep = document.querySelector(`.step[data-step="${currentStepId}"]`);
+    if (!currentStep) return true;
+    
+    if (currentStep.classList.contains('interstitial')) return true;
+    
+    const radios = currentStep.querySelectorAll('input[type="radio"]');
+    if (radios.length > 0) {
+        const radioNames = [...new Set([...radios].map(r => r.name))];
+        for (const name of radioNames) {
+            if (!currentStep.querySelector(`input[name="${name}"]:checked`)) {
+                showValidationError('Merci de sélectionner une option');
+                return false;
+            }
+        }
+    }
+    
+    const requiredInputs = currentStep.querySelectorAll('input[required]');
+    for (const input of requiredInputs) {
+        if (!input.value.trim()) {
+            showValidationError('Merci de remplir tous les champs');
+            input.focus();
+            return false;
+        }
+        if (input.type === 'email' && !isValidEmail(input.value)) {
+            showValidationError('Merci d\'entrer une adresse email valide');
+            input.focus();
+            return false;
+        }
+    }
+    
+    return true;
+}
+
+function showValidationError(message) {
+    alert(message);
+}
+
+function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function updateNavButtons(stepId) {
+    const btnBack = document.getElementById('btnBack');
+    const btnNext = document.getElementById('btnNext');
+    const nav = document.getElementById('quizNavigation');
+    const progress = document.getElementById('progressContainer');
+    
+    if (stepId === '0' || stepId === 'loading' || stepId === 'result') {
+        nav.style.display = 'none';
+    } else {
+        nav.style.display = 'flex';
+    }
+    
+    if (stepId === '0' || stepId === 'result') {
+        progress.style.display = 'none';
+    } else {
+        progress.style.display = 'flex';
+    }
+    
+    btnBack.style.display = quizState.currentStep <= 1 ? 'none' : 'flex';
+    
+    if (stepId === '12') {
+        btnNext.innerHTML = 'Découvrir mon programme <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+    } else {
+        btnNext.innerHTML = 'Continuer <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+    }
+    
+    const currentStep = document.querySelector(`.step[data-step="${stepId}"]`);
+    if (currentStep && currentStep.classList.contains('interstitial')) {
+        nav.style.display = 'none';
+    }
+}
+
+function updateProgress() {
+    const mainSteps = quizState.stepsOrder.filter(s => 
+        !s.startsWith('msg') && s !== 'loading' && s !== 'result' && s !== '0'
+    );
+    const currentMainIndex = mainSteps.indexOf(getCurrentStepId());
+    const progress = Math.max(0, ((currentMainIndex + 1) / mainSteps.length) * 100);
+    
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+    
+    if (progressBar) progressBar.style.width = `${progress}%`;
+    if (progressText) progressText.textContent = `${Math.max(1, currentMainIndex + 1)} / ${mainSteps.length}`;
+}
+
+// DYNAMIC CONTENT
+function populateDynamicContent() {
+    const prenom = quizState.answers.prenom || '';
+    
+    document.querySelectorAll('#prenomDisplay1, #loadingPrenom, #resultPrenom').forEach(el => {
+        if (el) el.textContent = prenom;
+    });
+}
+
+function updateProgressionDisplay() {
+    const poidsActuel = parseFloat(quizState.answers.poids_actuel) || 0;
+    const poidsObjectif = parseFloat(quizState.answers.poids_objectif) || 0;
+    const objectif = quizState.answers.objectif_principal;
+    const isPriseMasse = objectif === 'prise_masse';
+    const deltaPoids = Math.abs(poidsObjectif - poidsActuel);
+    const prenom = quizState.answers.prenom || '';
+
+    document.getElementById('prenomDisplay1').textContent = prenom;
+    document.getElementById('poidsActuelDisplay').textContent = poidsActuel + ' kg';
+    document.getElementById('poidsObjectifDisplay').textContent = poidsObjectif + ' kg';
+
+    let weeksText = '8 à 12';
+    let messageProgression = '';
+
+    if (isPriseMasse) {
+        // Prise de masse : 0,5 à 2,5 kg/mois = ~0,125 à 0,625 kg/semaine
+        if (deltaPoids > 0) {
+            const minWeeks = Math.ceil(deltaPoids / 0.625);
+            const maxWeeks = Math.ceil(deltaPoids / 0.125);
+            const cappedMax = Math.min(maxWeeks, 52);
+            weeksText = `${minWeeks} à ${cappedMax}`;
+        }
+        messageProgression = `💪 En prise de masse progressive (jusqu'à 2,5 kg/mois), tu peux atteindre ton objectif en <strong>${weeksText} semaines</strong> !`;
+    } else {
+        // Perte de poids : 0,5 à 2 kg/semaine
+        if (deltaPoids > 0 && poidsActuel > poidsObjectif) {
+            const minWeeks = Math.ceil(deltaPoids / 2);
+            const maxWeeks = Math.ceil(deltaPoids / 0.5);
+            weeksText = `${minWeeks} à ${maxWeeks}`;
+        }
+        messageProgression = `💪 En perdant entre 0,5 kg et 2 kg par semaine, tu peux atteindre ton objectif en <strong>${weeksText} semaines</strong> !`;
+    }
+
+    const weeksEl = document.getElementById('weeksEstimate');
+    if (weeksEl) weeksEl.innerHTML = messageProgression;
+
+    drawProgressionChart(poidsActuel, poidsObjectif, parseInt(weeksText.split(' ')[0]) || 12, isPriseMasse);
+
+    const imageContainer = document.getElementById('dynamicTransfoImage');
+    let imageSrc = IMAGES_TRANSFORMATION.definition_light;
+
+    if (!isPriseMasse) {
+        if (deltaPoids > 10) {
+            imageSrc = IMAGES_TRANSFORMATION.perte_poids_heavy;
+        } else if (deltaPoids > 5) {
+            imageSrc = IMAGES_TRANSFORMATION.perte_poids_heavy_2;
+        }
+    }
+
+    if (imageContainer) {
+        imageContainer.innerHTML = `<img src="${imageSrc}" alt="Transformation" class="transformation-photo">`;
+    }
+}
+
+function drawProgressionChart(poidsActuel, poidsObjectif, weeks, isPriseMasse) {
+    const canvas = document.getElementById('progressCanvas');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+    
+    ctx.clearRect(0, 0, width, height);
+    
+    const padding = { top: 20, right: 20, bottom: 40, left: 50 };
+    const chartWidth = width - padding.left - padding.right;
+    const chartHeight = height - padding.top - padding.bottom;
+    
+    const numPoints = Math.min(weeks, 12) || 12;
+    const delta = Math.abs(poidsObjectif - poidsActuel);
+    const points = [];
+    
+    for (let i = 0; i <= numPoints; i++) {
+        const progress = i / numPoints;
+        let poids;
+        if (isPriseMasse) {
+            poids = poidsActuel + (delta * progress); // courbe montante
+        } else {
+            poids = poidsActuel - (delta * progress); // courbe descendante
+        }
+        const minPoids = Math.min(poidsActuel, poidsObjectif);
+        const maxPoids = Math.max(poidsActuel, poidsObjectif);
+        const range = maxPoids - minPoids || 1;
+        points.push({
+            x: padding.left + (chartWidth * progress),
+            y: padding.top + chartHeight - (chartHeight * ((poids - minPoids) / range))
+        });
+    }
+    
+    ctx.strokeStyle = '#E8E4DE';
+    ctx.lineWidth = 1;
+    
+    for (let i = 0; i <= 4; i++) {
+        const y = padding.top + (chartHeight / 4) * i;
+        ctx.beginPath();
+        ctx.moveTo(padding.left, y);
+        ctx.lineTo(width - padding.right, y);
+        ctx.stroke();
+    }
+    
+    const gradient = ctx.createLinearGradient(padding.left, 0, width - padding.right, 0);
+    gradient.addColorStop(0, '#FDCB6E');
+    gradient.addColorStop(1, '#E17055');
+    
+    ctx.strokeStyle = gradient;
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    
+    for (let i = 1; i < points.length; i++) {
+        const xc = (points[i].x + points[i-1].x) / 2;
+        const yc = (points[i].y + points[i-1].y) / 2;
+        ctx.quadraticCurveTo(points[i-1].x, points[i-1].y, xc, yc);
+    }
+    ctx.lineTo(points[points.length-1].x, points[points.length-1].y);
+    ctx.stroke();
+    
+    const lastPoint = points[points.length - 1];
+    ctx.fillStyle = '#E17055';
+    ctx.beginPath();
+    ctx.moveTo(lastPoint.x, lastPoint.y - 8);
+    ctx.lineTo(lastPoint.x + 10, lastPoint.y);
+    ctx.lineTo(lastPoint.x, lastPoint.y + 8);
+    ctx.closePath();
+    ctx.fill();
+    
+    ctx.fillStyle = '#636E72';
+    ctx.font = '12px Nunito, sans-serif';
+    ctx.textAlign = 'center';
+    
+    ctx.fillText('Départ', padding.left, height - 10);
+    ctx.fillText(`Semaine ${numPoints}`, width - padding.right, height - 10);
+    
+    ctx.textAlign = 'right';
+    ctx.fillText(poidsActuel + ' kg', padding.left - 5, padding.top + 10);
+    ctx.fillText(poidsObjectif + ' kg', padding.left - 5, height - padding.bottom);
+}
+
+// LOADING
+function startLoading() {
+    const loadingBar = document.getElementById('loadingBar');
+    const loadingText = document.getElementById('loadingText');
+    const loadingPrenom = document.getElementById('loadingPrenom');
+    
+    if (loadingPrenom) loadingPrenom.textContent = quizState.answers.prenom || '';
+    
+    const messages = [
+        'Analyse de tes objectifs...',
+        'Calcul de ton profil...',
+        'Recherche du programme idéal...',
+        'Préparation de ta recommandation...'
+    ];
+    
+    let progress = 0;
+    let msgIndex = 0;
+    
+    const interval = setInterval(() => {
+        progress += 2;
+        if (loadingBar) loadingBar.style.width = `${progress}%`;
+        
+        if (progress % 25 === 0 && msgIndex < messages.length) {
+            if (loadingText) loadingText.textContent = messages[msgIndex++];
+        }
+        
+        if (progress >= 100) {
+            clearInterval(interval);
+            setTimeout(() => nextStep(), 500);
+        }
+    }, 50);
+}
+
+// RECOMMENDATION ENGINE
+function getRecommendation() {
+    const a = quizState.answers;
+    
+    if (a.objectif_principal === 'enceinte') {
+        return {
+            programme: PROGRAMMES.GROSSESSE,
+            type: 'grossesse',
+            showDiagnostic: false,
+            showEbooks: false,
+            showFeatures: true
+        };
+    }
+    
+    if (a.objectif_principal === 'post_partum' && a.delai_post_partum === 'moins_3_mois') {
+        return {
+            programme: PROGRAMMES.JANA,
+            type: 'jana',
+            showDiagnostic: false,
+            showEbooks: false,
+            showFeatures: true
+        };
+    }
+    
+    const hasSymptoms = a.problematiques && 
+        (a.problematiques.includes('diastasis') || 
+         a.problematiques.includes('fuites_urinaires') || 
+         a.problematiques.includes('pression_perineale'));
+    
+    if (a.objectif_principal === 'post_partum' && hasSymptoms) {
+        return {
+            programme: PROGRAMMES.JANA,
+            type: 'jana_symptoms',
+            showDiagnostic: false,
+            showEbooks: false,
+            showFeatures: true,
+            symptomWarning: true
+        };
+    }
+    
+    if (a.budget === 'moins_40') {
+        return {
+            programme: null,
+            type: 'ebooks',
+            showDiagnostic: false,
+            showEbooks: true,
+            showFeatures: false,
+            idealProgramme: determineIdealProgramme(a)
+        };
+    }
+    
+    if (a.budget === '40_59' || a.niveau_nutrition === 'maitrise' || a.niveau_nutrition === 'bonnes_bases') {
+        return {
+            programme: PROGRAMMES.MKC_SANS_DIAG,
+            type: 'mkc',
+            showDiagnostic: true,
+            showEbooks: false,
+            showFeatures: true
+        };
+    }
+    
+    if (a.budget === '60_plus' || a.budget === 'paiement_unique' || 
+        a.niveau_nutrition === 'perdue' || a.niveau_nutrition === 'pas_resultats') {
+        return {
+            programme: PROGRAMMES.MKC_AVEC_DIAG,
+            type: 'mkc_diag',
+            showDiagnostic: false,
+            showEbooks: false,
+            showFeatures: true
+        };
+    }
+    
+    return {
+        programme: PROGRAMMES.MKC_SANS_DIAG,
+        type: 'mkc',
+        showDiagnostic: true,
+        showEbooks: false,
+        showFeatures: true
+    };
+}
+
+function determineIdealProgramme(answers) {
+    if (answers.niveau_nutrition === 'perdue' || answers.niveau_nutrition === 'pas_resultats') {
+        return PROGRAMMES.MKC_AVEC_DIAG;
+    }
+    return PROGRAMMES.MKC_SANS_DIAG;
+}
+
+// SHOW RESULT
+function showResult() {
+    const recommendation = getRecommendation();
+    const a = quizState.answers;
+    
+    document.getElementById('resultPrenom').textContent = a.prenom || '';
+    
+    if (recommendation.showEbooks) {
+        showEbookResult(recommendation);
+        return;
+    }
+    
+    const prog = recommendation.programme;
+    
+    document.getElementById('programTitle').textContent = prog.titre;
+    document.getElementById('programSubtitle').textContent = prog.sous_titre;
+    
+    const priceEl = document.getElementById('programPrice');
+    if (prog.prix_mensuel) {
+        priceEl.innerHTML = `<span class="price-monthly">${prog.prix_mensuel}</span><span class="price-total">(soit ${prog.prix} au total)</span>`;
+    } else {
+        priceEl.textContent = prog.prix;
+    }
+    
+    const imageContainer = document.getElementById('resultImage');
+    let resultImage = prog.image;
+    
+    if (recommendation.type === 'mkc' || recommendation.type === 'mkc_diag') {
+        const deltaPoids = (parseFloat(a.poids_actuel) || 0) - (parseFloat(a.poids_objectif) || 0);
+        if (deltaPoids > 10) {
+            resultImage = IMAGES_TRANSFORMATION.perte_poids_heavy;
+        } else if (deltaPoids > 5) {
+            resultImage = IMAGES_TRANSFORMATION.perte_poids_heavy_2;
+        } else {
+            resultImage = IMAGES_TRANSFORMATION.definition_light;
+        }
+    }
+    
+    if (recommendation.type === 'jana' || recommendation.type === 'jana_symptoms') {
+        resultImage = PROGRAMMES.JANA.image;
+    }
+    
+    imageContainer.innerHTML = `<img src="${resultImage}" alt="${prog.titre}" class="result-main-image">`;
+    imageContainer.style.display = 'block';
+    
+    document.getElementById('resultMessage').innerHTML = buildResultMessage(recommendation);
+    document.getElementById('resultMessage').style.display = 'block';
+    
+    const warningEl = document.getElementById('problematiqueWarning');
+    if (recommendation.symptomWarning) {
+        warningEl.style.display = 'block';
+        warningEl.innerHTML = `<p>⚠️ <strong>Note importante :</strong> Tu as mentionné des symptômes (diastasis, fuites urinaires ou pression périnéale). Il est recommandé de consulter un professionnel de santé (sage femme, kiné spécialisé) en parallèle du programme pour un suivi adapté.</p>`;
+    } else {
+        warningEl.style.display = 'none';
+    }
+    
+    const engagementBox = document.getElementById('engagementBox');
+    engagementBox.style.display = (recommendation.type === 'mkc' || recommendation.type === 'mkc_diag') ? 'block' : 'none';
+    
+    const featuresCarousel = document.getElementById('featuresCarousel');
+    featuresCarousel.style.display = recommendation.showFeatures ? 'block' : 'none';
+    if (recommendation.showFeatures) {
+        initFeaturesCarousel();
+    }
+    
+    buildCTA(recommendation);
+    
+    const diagOption = document.getElementById('diagnosticOption');
+    if (recommendation.showDiagnostic) {
+        diagOption.style.display = 'block';
+        document.getElementById('diagnosticButton').href = PROGRAMMES.MKC_AVEC_DIAG.lien_paiement;
+    } else {
+        diagOption.style.display = 'none';
+    }
+    
+    document.getElementById('ebookSection').style.display = 'none';
+    document.getElementById('resultCard').style.display = 'block';
+    
+    sendToMailerLite(recommendation);
+}
+
+function showEbookResult(recommendation) {
+    const a = quizState.answers;
+    
+    document.getElementById('resultCard').style.display = 'none';
+    document.getElementById('resultMessage').style.display = 'none';
+    document.getElementById('engagementBox').style.display = 'none';
+    document.getElementById('diagnosticOption').style.display = 'none';
+    document.getElementById('resultImage').style.display = 'none';
+    document.getElementById('featuresCarousel').style.display = 'none';
+    
+    const ebookSection = document.getElementById('ebookSection');
+    ebookSection.style.display = 'block';
+    
+    const ebookGrid = document.getElementById('ebookGrid');
+    let ebooksHtml = '';
+    
+    if (a.objectif_principal === 'perte_poids_10kg' || a.objectif_principal === 'recomposition') {
+        ebooksHtml += buildEbookCard(EBOOKS.DECLIC);
+    }
+    
+    if (a.zones && a.zones.includes('fessiers')) {
+        ebooksHtml += buildEbookCard(EBOOKS.FESSIERS);
+    } else if (a.objectif_principal === 'prise_masse') {
+        ebooksHtml += buildEbookCard(EBOOKS.FESSIERS);
+    }
+    
+    if (!ebooksHtml) {
+        ebooksHtml = buildEbookCard(EBOOKS.DECLIC) + buildEbookCard(EBOOKS.FESSIERS);
+    }
+    
+    ebookGrid.innerHTML = ebooksHtml;
+    
+    const ideal = recommendation.idealProgramme;
+    document.getElementById('idealProgram').innerHTML = `<strong>${ideal.titre}</strong> à ${ideal.prix_mensuel || ideal.prix}`;
+    
+    sendToMailerLite(recommendation);
+}
+
+function buildEbookCard(ebook) {
+    const priceHtml = ebook.prix_barre 
+        ? `<span class="price-barred">${ebook.prix_barre}</span> <span class="price">${ebook.prix}</span>`
+        : `<span class="price">${ebook.prix}</span>`;
+    
+    return `
+        <div class="ebook-card">
+            <img src="${ebook.image}" alt="${ebook.titre}" class="ebook-image">
+            <h4>${ebook.titre}</h4>
+            <p>${ebook.sous_titre}</p>
+            <div class="ebook-price">${priceHtml}</div>
+            <a href="${ebook.lien}" class="btn-primary btn-ebook" target="_blank">Je le veux</a>
         </div>
+    `;
+}
 
-        <div class="quiz-content" id="quizContent">
+function buildResultMessage(recommendation) {
+    const a = quizState.answers;
+    const prenom = a.prenom || '';
+    
+    if (recommendation.type === 'grossesse') {
+        return `
+            <p>Félicitations ${prenom} pour ta grossesse ! 🤰</p>
+            <p>Le programme <strong>MKC Grossesse</strong> t'accompagne trimestre par trimestre pour rester active en toute sécurité, maintenir ta masse musculaire et préparer ton corps à l'accouchement.</p>
+            <p>💡 Rappel : pendant la grossesse, l'objectif n'est pas de perdre du poids mais de garder un corps fort et mobile pour toi et ton bébé.</p>
+        `;
+    }
+    
+    if (recommendation.type === 'jana' || recommendation.type === 'jana_symptoms') {
+        return `
+            <p>${prenom}, le programme <strong>JANA Postpartum</strong> est fait pour toi.</p>
+            <p>Il va te permettre de :</p>
+            <ul>
+                <li>🔹 Reconnecter et renforcer ton périnée en douceur</li>
+                <li>🔹 Travailler tes abdominaux profonds via des exercices de respiration</li>
+                <li>🔹 Éviter les fuites urinaires et le diastasis</li>
+                <li>🔹 Retrouver un ventre plat progressivement</li>
+            </ul>
+        `;
+    }
+    
+    if (recommendation.type === 'mkc_diag') {
+        return `
+            <p>${prenom}, d'après tes réponses, tu as besoin d'un cadre nutritionnel clair pour obtenir des résultats.</p>
+
+            <p>🎯 <strong>Objectifs du programme</strong></p>
+            <ul>
+                <li>✅ Perte de masse grasse</li>
+                <li>✅ Fessiers plus galbés</li>
+                <li>✅ Abdos plus dessinés</li>
+                <li>✅ Silhouette globalement plus définie</li>
+            </ul>
+
+            <p>📋 <strong>Contenu inclus</strong></p>
+            <ul>
+                <li>✅ Programme sportif structuré sur 12 semaines (13 semaines d'accès)</li>
+                <li>✅ 4 séances par semaine (adaptables à 3)</li>
+                <li>✅ Réalisable en salle ou à la maison</li>
+                <li>✅ +300 recettes rapides et équilibrées</li>
+            </ul>
+
+            <p>🥗 <strong>Diagnostic nutritionnel personnalisé</strong> <em>(sous réserve de places disponibles)</em></p>
+            <ul>
+                <li>✅ Calcul précis de tes calories et macros (protéines, glucides, lipides)</li>
+                <li>✅ Programme nutritionnel personnalisé par ta coach</li>
+                <li>✅ Analyse morphologique si tu fournis des photos</li>
+            </ul>
+            <p><em>Diagnostic livré sous 48 à 72h après inscription.</em></p>
+
+            <p><em>⚠️ Programme sans suivi personnalisé continu.</em></p>
+        `;
+    }
+    
+    return `
+        <p>${prenom}, le programme <strong>MKC Transformation</strong> correspond à ton profil.</p>
+
+        <p>🎯 <strong>Objectifs du programme</strong></p>
+        <ul>
+            <li>✅ Perte de masse grasse</li>
+            <li>✅ Fessiers plus galbés</li>
+            <li>✅ Abdos plus dessinés</li>
+            <li>✅ Silhouette globalement plus définie</li>
+        </ul>
+
+        <p>📋 <strong>Contenu inclus</strong></p>
+        <ul>
+            <li>✅ Programme sportif structuré sur 12 semaines (13 semaines d'accès, dont 1 semaine d'adaptation à l'app)</li>
+            <li>✅ Démarrage immédiat après achat</li>
+            <li>✅ 4 séances par semaine (adaptables à 3 selon tes disponibilités)</li>
+            <li>✅ Réalisable en salle ou à la maison</li>
+            <li>✅ Méthode nutritionnelle complète : calcul des calories, répartition protéines / glucides / lipides</li>
+            <li>✅ Accès à +300 recettes rapides et équilibrées</li>
+        </ul>
+
+        <p>🏠 <strong>Matériel à la maison</strong> : élastiques, bouteilles d'eau, haltères légers</p>
+
+        <p><em>⚠️ Programme sans suivi personnalisé. Tu gères ton parcours en autonomie avec tous les outils fournis.</em></p>
+    `;
+}
+
+function buildCTA(recommendation) {
+    const ctaContainer = document.getElementById('resultCtaContainer');
+    const prog = recommendation.programme;
+    
+    if (!prog) {
+        ctaContainer.innerHTML = '';
+        return;
+    }
+    
+    let ctaHtml = `
+        <a href="${prog.lien_paiement}" class="btn-primary btn-result" target="_blank">
+            Commencer ma transformation
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+        </a>
+    `;
+    
+    if (prog.lien_info && prog.lien_info !== prog.lien_paiement) {
+        ctaHtml += `<a href="${prog.lien_info}" class="btn-secondary btn-info" target="_blank">En savoir plus sur le programme</a>`;
+    }
+    
+    ctaContainer.innerHTML = ctaHtml;
+}
+
+// FEATURES CAROUSEL
+function initFeaturesCarousel() {
+    currentFeatureSlide = 0;
+    updateFeaturesCarousel();
+    
+    setInterval(() => {
+        slideFeatures(1);
+    }, 5000);
+}
+
+function slideFeatures(direction) {
+    currentFeatureSlide += direction;
+    if (currentFeatureSlide > 2) currentFeatureSlide = 0;
+    if (currentFeatureSlide < 0) currentFeatureSlide = 2;
+    updateFeaturesCarousel();
+}
+
+function updateFeaturesCarousel() {
+    const track = document.getElementById('featuresTrack');
+    const dots = document.querySelectorAll('#carouselDots .dot');
+    
+    if (track) {
+        track.style.transform = `translateX(-${currentFeatureSlide * 100}%)`;
+    }
+    
+    dots.forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentFeatureSlide);
+    });
+}
+
+// MAILERLITE
+// IDs des groupes de segmentation par type de prospect
+// ⚠️ IMPORTANT : Crée ces 3 groupes dans MailerLite et remplace les IDs ci-dessous
+const MAILERLITE_SEGMENT_GROUPS = {
+    'prospect_jana': '',        // TODO: Mettre l'ID du groupe "Prospect JANA"
+    'prospect_grossesse': '',   // TODO: Mettre l'ID du groupe "Prospect Grossesse"
+    'prospect_mkc90': ''        // TODO: Mettre l'ID du groupe "Prospect MAKEACHAMP 90 jours"
+};
+
+function getProspectSegment(recommendation) {
+    if (!recommendation.programme) return 'prospect_mkc90'; // Ebooks = prospects MKC par défaut
+    
+    switch (recommendation.programme.key) {
+        case 'JANA': return 'prospect_jana';
+        case 'GROSSESSE': return 'prospect_grossesse';
+        case 'MKC_SANS_DIAG':
+        case 'MKC_AVEC_DIAG':
+        default: return 'prospect_mkc90';
+    }
+}
+
+async function sendToMailerLite(recommendation) {
+    const a = quizState.answers;
+    const segment = getProspectSegment(recommendation);
+    
+    // Groupes : le groupe principal + le groupe de segment (si l'ID existe)
+    const groups = [MAILERLITE_GROUP_ID];
+    const segmentGroupId = MAILERLITE_SEGMENT_GROUPS[segment];
+    if (segmentGroupId) {
+        groups.push(segmentGroupId);
+    }
+    
+    const subscriberData = {
+        email: a.email,
+        fields: {
+            name: a.prenom || '',
+            quiz_objectif: a.objectif_principal || '',
+            quiz_age: a.tranche_age || '',
+            quiz_delai_pp: a.delai_post_partum || '',
+            quiz_trimestre: a.trimestre_grossesse || '',
+            quiz_problematiques: (a.problematiques || []).join(', '),
+            quiz_niveau_sport: a.niveau_sport || '',
+            quiz_niveau_nutrition: a.niveau_nutrition || '',
+            quiz_budget: a.budget || '',
+            quiz_programme_recommande: recommendation.programme ? recommendation.programme.key : 'EBOOKS',
+            quiz_segment: segment,
+            quiz_poids_actuel: a.poids_actuel || '',
+            quiz_poids_objectif: a.poids_objectif || '',
+            quiz_date: new Date().toISOString().split('T')[0]
+        },
+        groups: groups,
+        status: 'active'
+    };
+    
+    try {
+        const response = await fetch('https://connect.mailerlite.com/api/subscribers', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${MAILERLITE_API_KEY}`
+            },
+            body: JSON.stringify(subscriberData)
+        });
+        
+        if (!response.ok) {
+            console.error('MailerLite error:', await response.text());
+        } else {
+            console.log('MailerLite: subscriber added to segment', segment);
+        }
+    } catch (error) {
+        console.error('MailerLite error:', error);
+    }
+}
+
+// CAROUSEL ACCUEIL
+function initCarousel() {
+    const track = document.getElementById('carouselTrack');
+    if (!track) return;
+    
+    const slides = track.innerHTML;
+    track.innerHTML = slides + slides;
+    
+    let scrollPos = 0;
+    
+    setInterval(() => {
+        scrollPos += 1;
+        if (scrollPos >= track.scrollWidth / 2) {
+            scrollPos = 0;
+        }
+        track.style.transform = `translateX(-${scrollPos}px)`;
+    }, 30);
+}
+
+// OPTION CARDS
+function initOptionCards() {
+    document.querySelectorAll('.option-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const input = this.querySelector('input');
+            if (!input) return;
             
-            <!-- ACCUEIL -->
-            <div class="step active" data-step="0">
-                <div class="step-content welcome-screen">
-                    <div class="welcome-badge">✨ Quiz personnalisé • 2 min</div>
-                    <h1>Trouve le programme<br><span class="highlight">parfaitement adapté</span><br>à ton objectif</h1>
-                    <p class="welcome-subtitle">Réponds à quelques questions simples et découvre quel programme te correspond le mieux.</p>
-                    
-                    <div class="carousel-section">
-                        <p class="carousel-title">+ 4 000 femmes ont déjà trouvé leur programme idéal</p>
-                        <div class="carousel-container">
-                            <div class="carousel-track" id="carouselTrack">
-                                <div class="carousel-slide"><img src="https://static.wixstatic.com/media/885b87_05387e543ec74e6595cf5c3923db1f21~mv2.jpg" alt="Transformation"></div>
-                                <div class="carousel-slide"><img src="https://static.wixstatic.com/media/885b87_a013743afc694209afe6ab731ab3658f~mv2.jpg" alt="Transformation"></div>
-                                <div class="carousel-slide"><img src="https://static.wixstatic.com/media/885b87_9962404672e04a2b9a7a9581e91170a0~mv2.jpg" alt="Transformation"></div>
-                                <div class="carousel-slide"><img src="https://static.wixstatic.com/media/885b87_c23646d2c675429785ae3f247cb96157~mv2.jpg" alt="Transformation"></div>
-                                <div class="carousel-slide"><img src="https://static.wixstatic.com/media/885b87_d61b61682e1c4727923bb21fb83c704d~mv2.jpg" alt="Transformation"></div>
-                                <div class="carousel-slide"><img src="https://static.wixstatic.com/media/885b87_a279e8417e3149e5946195faf9745f45~mv2.jpg" alt="Transformation"></div>
-                                <div class="carousel-slide"><img src="https://static.wixstatic.com/media/885b87_4b26ae59b445408897c4e7ed21769d92~mv2.jpg" alt="Transformation"></div>
-                                <div class="carousel-slide"><img src="https://static.wixstatic.com/media/885b87_3ce14ec9010e4e60832ed49f6e7b1ec8~mv2.jpg" alt="Transformation"></div>
-                                <div class="carousel-slide"><img src="https://static.wixstatic.com/media/885b87_82774e1c1c83456688525bd1905e4ab0~mv2.jpg" alt="Transformation"></div>
-                                <div class="carousel-slide"><img src="https://static.wixstatic.com/media/9b535b_3f493a700dbb40a1841fe3ff00730d19~mv2.webp" alt="Transformation"></div>
-                                <div class="carousel-slide"><img src="https://static.wixstatic.com/media/9b535b_d459ac345e794caba9cab7cb7cda8651~mv2.jpg" alt="Transformation"></div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <button class="btn-primary btn-start" onclick="nextStep()">
-                        Commencer le quiz
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                    </button>
-                </div>
-            </div>
+            if (input.type === 'radio') {
+                this.closest('.options-grid').querySelectorAll('.option-card').forEach(c => {
+                    c.classList.remove('selected');
+                });
+                this.classList.add('selected');
+                input.checked = true;
+            } else if (input.type === 'checkbox') {
+                if (this.classList.contains('exclusive')) {
+                    if (!input.checked) {
+                        this.closest('.options-grid').querySelectorAll('.option-card:not(.exclusive) input').forEach(cb => {
+                            cb.checked = false;
+                            cb.closest('.option-card').classList.remove('selected');
+                        });
+                    }
+                } else {
+                    const exclusive = this.closest('.options-grid').querySelector('.option-card.exclusive input');
+                    if (exclusive) {
+                        exclusive.checked = false;
+                        exclusive.closest('.option-card').classList.remove('selected');
+                    }
+                }
+                input.checked = !input.checked;
+                this.classList.toggle('selected', input.checked);
+            }
+        });
+    });
+}
 
-            <!-- ÉTAPE 1 : OBJECTIF -->
-            <div class="step" data-step="1">
-                <div class="step-content">
-                    <span class="step-label">Ton objectif</span>
-                    <h2>Quel est ton objectif principal ?</h2>
-                    <p class="step-hint">Sélectionne ce qui te correspond le mieux.</p>
-                    <div class="options-grid single">
-                        <label class="option-card" data-value="perte_poids_10plus">
-                            <input type="radio" name="objectif_principal" value="perte_poids_10plus">
-                            <div class="option-content">
-                                <span class="option-icon">⚖️</span>
-                                <span class="option-text">Perdre du poids (+10kg)</span>
-                            </div>
-                        </label>
-                        <label class="option-card" data-value="recomposition">
-                            <input type="radio" name="objectif_principal" value="recomposition">
-                            <div class="option-content">
-                                <span class="option-icon">✨</span>
-                                <span class="option-text">Perdre du gras et construire du muscle</span>
-                            </div>
-                        </label>
-                        <label class="option-card" data-value="prise_masse">
-                            <input type="radio" name="objectif_principal" value="prise_masse">
-                            <div class="option-content">
-                                <span class="option-icon">💪</span>
-                                <span class="option-text">Prise de masse</span>
-                            </div>
-                        </label>
-                        <label class="option-card" data-value="enceinte">
-                            <input type="radio" name="objectif_principal" value="enceinte">
-                            <div class="option-content">
-                                <span class="option-icon">🤰</span>
-                                <span class="option-text">Je suis enceinte</span>
-                            </div>
-                        </label>
-                        <label class="option-card" data-value="post_partum">
-                            <input type="radio" name="objectif_principal" value="post_partum">
-                            <div class="option-content">
-                                <span class="option-icon">👶</span>
-                                <span class="option-text">Récupérer mon corps après ma grossesse</span>
-                            </div>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ÉTAPE 1A : TRIMESTRE GROSSESSE -->
-            <div class="step conditional" data-step="1a" data-condition="objectif_principal" data-condition-value="enceinte">
-                <div class="step-content">
-                    <span class="step-label">Ta grossesse</span>
-                    <h2>À quel trimestre es tu ?</h2>
-                    <p class="step-hint">Chaque trimestre a ses spécificités, le programme s'adapte à ton stade.</p>
-                    <div class="options-grid single">
-                        <label class="option-card" data-value="trimestre_1">
-                            <input type="radio" name="trimestre_grossesse" value="trimestre_1">
-                            <div class="option-content"><span class="option-text">1er trimestre (0 à 3 mois)</span></div>
-                        </label>
-                        <label class="option-card" data-value="trimestre_2">
-                            <input type="radio" name="trimestre_grossesse" value="trimestre_2">
-                            <div class="option-content"><span class="option-text">2e trimestre (4 à 6 mois)</span></div>
-                        </label>
-                        <label class="option-card" data-value="trimestre_3">
-                            <input type="radio" name="trimestre_grossesse" value="trimestre_3">
-                            <div class="option-content"><span class="option-text">3e trimestre (7 à 9 mois)</span></div>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <!-- MESSAGE GROSSESSE -->
-            <div class="step conditional interstitial" data-step="msg_grossesse" data-condition="objectif_principal" data-condition-value="enceinte">
-                <div class="step-content message-screen">
-                    <div class="info-box grossesse-info">
-                        <h2>🤰 S'entraîner enceinte : ce que dit la science</h2>
-                        <p class="message-text">Bonne nouvelle : maintenir une activité physique pendant la grossesse est non seulement possible, mais <strong>recommandé par les professionnels de santé</strong>.</p>
-                        
-                        <div class="benefits-list">
-                            <p><strong>Les bienfaits prouvés :</strong></p>
-                            <ul>
-                                <li>✅ Limiter la prise de poids excessive</li>
-                                <li>✅ Réduire les douleurs (dos, bassin, fatigue)</li>
-                                <li>✅ Améliorer ton bien être et ton énergie</li>
-                                <li>✅ Faciliter la récupération après l'accouchement</li>
-                                <li>✅ Maintenir ta masse musculaire</li>
-                            </ul>
-                        </div>
-                        
-                        <p class="message-highlight">💡 L'objectif n'est pas de perdre du poids, mais de garder un corps fort, mobile et en bonne santé pour toi et ton bébé.</p>
-                    </div>
-                    
-                    <div class="transformation-image">
-                        <img src="https://static.wixstatic.com/media/885b87_cdef4b59a53e46498aa1324aef18632c~mv2.jpg" alt="Entraînement grossesse" class="transformation-photo">
-                    </div>
-                    
-                    <button class="btn-primary" onclick="nextStep()">J'ai compris, continuer</button>
-                </div>
-            </div>
-
-            <!-- ÉTAPE 1B : DÉLAI POST PARTUM -->
-            <div class="step conditional" data-step="1b" data-condition="objectif_principal" data-condition-value="post_partum">
-                <div class="step-content">
-                    <span class="step-label">Ton post partum</span>
-                    <h2>Depuis combien de temps as tu accouché ?</h2>
-                    <p class="step-hint">La récupération post partum demande une approche spécifique et progressive.</p>
-                    <div class="options-grid single">
-                        <label class="option-card" data-value="moins_3_mois">
-                            <input type="radio" name="delai_post_partum" value="moins_3_mois">
-                            <div class="option-content"><span class="option-text">Moins de 3 mois</span></div>
-                        </label>
-                        <label class="option-card" data-value="3_12_mois">
-                            <input type="radio" name="delai_post_partum" value="3_12_mois">
-                            <div class="option-content"><span class="option-text">Entre 3 et 12 mois</span></div>
-                        </label>
-                        <label class="option-card" data-value="plus_12_mois">
-                            <input type="radio" name="delai_post_partum" value="plus_12_mois">
-                            <div class="option-content"><span class="option-text">Plus d'un an</span></div>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <!-- MESSAGE POST PARTUM 0 à 3 MOIS -->
-            <div class="step conditional interstitial" data-step="msg_pp_03" data-condition="delai_post_partum" data-condition-value="moins_3_mois">
-                <div class="step-content message-screen">
-                    <div class="info-box postpartum-info">
-                        <h2>👶 Les 3 premiers mois post partum</h2>
-                        <p class="message-text">Félicitations pour ton accouchement ! Cette période est <strong>très importante pour ta récupération</strong>.</p>
-                        
-                        <div class="benefits-list">
-                            <p><strong>Pourquoi c'est important de bien récupérer :</strong></p>
-                            <ul>
-                                <li>🔹 <strong>Ton périnée</strong> a été mis à rude épreuve, il a besoin d'être reconnecté et renforcé en douceur pour éviter les fuites urinaires</li>
-                                <li>🔹 <strong>Tes abdominaux</strong> se sont écartés naturellement (diastasis), des exercices de respiration spécifiques permettent de les rapprocher correctement</li>
-                                <li>🔹 <strong>Sans cette étape</strong>, beaucoup de femmes gardent un ventre gonflé pendant des années, même en faisant du sport</li>
-                            </ul>
-                        </div>
-                        
-                        <p class="message-highlight">💡 Le programme JANA Postpartum est conçu exactement pour cette phase : rééducation en douceur, exercices de respiration, reconnexion corps esprit.</p>
-                    </div>
-                    
-                    <div class="testimonial-box">
-                        <img src="https://static.wixstatic.com/media/885b87_9c9ad37cc61440e3b0b78eeff6e2422b~mv2.jpg" alt="Transformation postpartum" class="testimonial-photo">
-                        <div class="testimonial-content">
-                            <p class="testimonial-text">"Si je n'avais pas fait ce programme en postpartum, je pense que je n'aurais jamais récupéré mon corps. C'est vraiment la meilleure décision que j'ai pu prendre. Merci Sabrina."</p>
-                            <p class="testimonial-author">— Marie* <span class="author-note">(*prénom modifié)</span></p>
-                        </div>
-                    </div>
-                    
-                    <button class="btn-primary" onclick="nextStep()">Continuer</button>
-                </div>
-            </div>
-
-            <!-- ÉTAPE 2 : TRANCHE D'ÂGE -->
-            <div class="step" data-step="2">
-                <div class="step-content">
-                    <span class="step-label">À propos de toi</span>
-                    <h2>Quelle est ta tranche d'âge ?</h2>
-                    <p class="step-hint">Le métabolisme évolue avec l'âge, cette info permet d'adapter les recommandations.</p>
-                    <div class="options-grid single compact">
-                        <label class="option-card small" data-value="moins_20">
-                            <input type="radio" name="tranche_age" value="moins_20">
-                            <div class="option-content"><span class="option-text">Moins de 20 ans</span></div>
-                        </label>
-                        <label class="option-card small" data-value="20_29">
-                            <input type="radio" name="tranche_age" value="20_29">
-                            <div class="option-content"><span class="option-text">20 à 29 ans</span></div>
-                        </label>
-                        <label class="option-card small" data-value="30_39">
-                            <input type="radio" name="tranche_age" value="30_39">
-                            <div class="option-content"><span class="option-text">30 à 39 ans</span></div>
-                        </label>
-                        <label class="option-card small" data-value="40_49">
-                            <input type="radio" name="tranche_age" value="40_49">
-                            <div class="option-content"><span class="option-text">40 à 49 ans</span></div>
-                        </label>
-                        <label class="option-card small" data-value="50_plus">
-                            <input type="radio" name="tranche_age" value="50_plus">
-                            <div class="option-content"><span class="option-text">50 ans et plus</span></div>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ÉTAPE 3 : PROBLÉMATIQUES (post partum) -->
-            <div class="step conditional" data-step="3" data-condition="objectif_principal" data-condition-value="post_partum">
-                <div class="step-content">
-                    <span class="step-label">Ton corps</span>
-                    <h2>As tu une ou plusieurs de ces problématiques ?</h2>
-                    <p class="step-hint">Ces informations permettent d'orienter vers le programme le plus adapté.</p>
-                    <div class="options-grid multiple">
-                        <label class="option-card checkbox" data-value="diastasis">
-                            <input type="checkbox" name="problematiques" value="diastasis">
-                            <div class="option-content">
-                                <span class="option-text">Diastasis</span>
-                                <span class="option-hint">Écartement des abdominaux</span>
-                            </div>
-                        </label>
-                        <label class="option-card checkbox" data-value="fuites_urinaires">
-                            <input type="checkbox" name="problematiques" value="fuites_urinaires">
-                            <div class="option-content">
-                                <span class="option-text">Fuites urinaires</span>
-                                <span class="option-hint">À l'effort, en toussant...</span>
-                            </div>
-                        </label>
-                        <label class="option-card checkbox" data-value="ventre_gonfle">
-                            <input type="checkbox" name="problematiques" value="ventre_gonfle">
-                            <div class="option-content"><span class="option-text">Ventre gonflé en permanence</span></div>
-                        </label>
-                        <label class="option-card checkbox" data-value="pression_perineale">
-                            <input type="checkbox" name="problematiques" value="pression_perineale">
-                            <div class="option-content">
-                                <span class="option-text">Pression périnéale</span>
-                                <span class="option-hint">Sensation de lourdeur, pesanteur</span>
-                            </div>
-                        </label>
-                        <label class="option-card checkbox exclusive" data-value="aucune">
-                            <input type="checkbox" name="problematiques" value="aucune">
-                            <div class="option-content"><span class="option-text">Aucune de ces problématiques</span></div>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ÉTAPE 4 : DONNÉES DE BASE -->
-            <div class="step" data-step="4">
-                <div class="step-content">
-                    <span class="step-label">Tes informations</span>
-                    <h2>Quelques données pour personnaliser ta recommandation</h2>
-                    <p class="step-hint">Ces informations restent 100% confidentielles.</p>
-                    <div class="input-group">
-                        <div class="input-field">
-                            <label for="prenom">Ton prénom</label>
-                            <input type="text" id="prenom" name="prenom" placeholder="Ton prénom" required>
-                        </div>
-                        <div class="input-field">
-                            <label for="taille_cm">Ta taille</label>
-                            <div class="input-with-unit">
-                                <input type="number" id="taille_cm" name="taille_cm" placeholder="165" min="100" max="220" required>
-                                <span class="unit">cm</span>
-                            </div>
-                        </div>
-                        <div class="input-field">
-                            <label for="poids_actuel">Ton poids actuel</label>
-                            <div class="input-with-unit">
-                                <input type="number" id="poids_actuel" name="poids_actuel" placeholder="68" min="30" max="200" step="0.1" required>
-                                <span class="unit">kg</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ÉTAPE 5 : BODY FAT -->
-            <div class="step skip-if-pregnant skip-if-pp03" data-step="5">
-                <div class="step-content">
-                    <span class="step-label">Ta silhouette actuelle</span>
-                    <h2>Quel pourcentage de masse grasse te semble le plus proche de ta silhouette ?</h2>
-                    <p class="step-hint reassuring">Pas de jugement, cette question permet simplement de mieux comprendre ton point de départ.</p>
-                    
-                    <div class="bodyfat-image-container">
-                        <img src="https://i.imgur.com/GaQI7lu.png" alt="Référence visuelle masse grasse" class="bodyfat-image">
-                    </div>
-                    
-                    <div class="options-grid single bodyfat-options">
-                        <label class="option-card small" data-value="15_20">
-                            <input type="radio" name="body_fat" value="15_20">
-                            <div class="option-content"><span class="option-text">15 à 20%</span><span class="option-hint">Athlétique</span></div>
-                        </label>
-                        <label class="option-card small" data-value="20_25">
-                            <input type="radio" name="body_fat" value="20_25">
-                            <div class="option-content"><span class="option-text">20 à 25%</span><span class="option-hint">Fitness</span></div>
-                        </label>
-                        <label class="option-card small" data-value="25_30">
-                            <input type="radio" name="body_fat" value="25_30">
-                            <div class="option-content"><span class="option-text">25 à 30%</span><span class="option-hint">Moyenne</span></div>
-                        </label>
-                        <label class="option-card small" data-value="30_35">
-                            <input type="radio" name="body_fat" value="30_35">
-                            <div class="option-content"><span class="option-text">30 à 35%</span></div>
-                        </label>
-                        <label class="option-card small" data-value="35_40">
-                            <input type="radio" name="body_fat" value="35_40">
-                            <div class="option-content"><span class="option-text">35 à 40%</span></div>
-                        </label>
-                        <label class="option-card small" data-value="40_plus">
-                            <input type="radio" name="body_fat" value="40_plus">
-                            <div class="option-content"><span class="option-text">40%+</span></div>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ÉTAPE 6 : POIDS OBJECTIF -->
-            <div class="step skip-if-pregnant skip-if-pp03" data-step="6">
-                <div class="step-content">
-                    <span class="step-label">Ton objectif</span>
-                    <h2>Quel est le poids que tu aimerais atteindre ?</h2>
-                    <p class="step-hint">Ce chiffre nous permet de calculer une estimation réaliste.</p>
-                    <div class="input-group single">
-                        <div class="input-field">
-                            <div class="input-with-unit">
-                                <input type="number" id="poids_objectif" name="poids_objectif" placeholder="58" min="30" max="200" step="0.1" required>
-                                <span class="unit">kg</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ÉTAPE 7 : ZONES À CIBLER -->
-            <div class="step skip-if-pregnant skip-if-pp03" data-step="7">
-                <div class="step-content">
-                    <span class="step-label">Tes zones</span>
-                    <h2>Quelles zones souhaites tu cibler en priorité ?</h2>
-                    <p class="step-hint">Plusieurs choix possibles.</p>
-                    
-                    <div class="anatomy-image-container">
-                        <img src="https://media.istockphoto.com/id/886069048/fr/photo/la-figure-de-rendu-3d-anatomie-f%C3%A9minine-avec-des-muscles-mappe-sur-blanc.jpg?s=612x612&w=0&k=20&c=h-uQxKqD4RUapcGAh9i8AUUVGOD8MQWYrmJZbRumqII=" alt="Anatomie musculaire" class="anatomy-image">
-                    </div>
-                    
-                    <div class="options-grid multiple zones">
-                        <label class="option-card checkbox" data-value="ventre">
-                            <input type="checkbox" name="zones" value="ventre">
-                            <div class="option-content"><span class="option-text">Ventre</span></div>
-                        </label>
-                        <label class="option-card checkbox" data-value="fessiers">
-                            <input type="checkbox" name="zones" value="fessiers">
-                            <div class="option-content"><span class="option-text">Fessiers</span></div>
-                        </label>
-                        <label class="option-card checkbox" data-value="cuisses">
-                            <input type="checkbox" name="zones" value="cuisses">
-                            <div class="option-content"><span class="option-text">Cuisses</span></div>
-                        </label>
-                        <label class="option-card checkbox" data-value="bras">
-                            <input type="checkbox" name="zones" value="bras">
-                            <div class="option-content"><span class="option-text">Bras</span></div>
-                        </label>
-                        <label class="option-card checkbox" data-value="dos">
-                            <input type="checkbox" name="zones" value="dos">
-                            <div class="option-content"><span class="option-text">Dos</span></div>
-                        </label>
-                        <label class="option-card checkbox" data-value="partout">
-                            <input type="checkbox" name="zones" value="partout">
-                            <div class="option-content"><span class="option-text">Un peu partout</span></div>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <!-- MESSAGE PROGRESSION ANIMÉE -->
-            <div class="step interstitial skip-if-pregnant skip-if-pp03" data-step="msg_progression">
-                <div class="step-content message-screen">
-                    <div class="progression-box">
-                        <h2><span id="prenomDisplay1"></span>, voici ta projection 📈</h2>
-                        
-                        <div class="progression-stats">
-                            <div class="stat-item">
-                                <span class="stat-value" id="poidsActuelDisplay">--</span>
-                                <span class="stat-label">Poids actuel</span>
-                            </div>
-                            <div class="stat-arrow">→</div>
-                            <div class="stat-item highlight">
-                                <span class="stat-value" id="poidsObjectifDisplay">--</span>
-                                <span class="stat-label">Objectif</span>
-                            </div>
-                        </div>
-                        
-                        <div class="progression-chart" id="progressionChart">
-                            <canvas id="progressCanvas" width="320" height="200"></canvas>
-                        </div>
-                        
-                        <div class="progression-message">
-                            <p class="message-highlight" id="weeksEstimate"></p>
-                        </div>
-                        
-                        <div class="transformation-image" id="dynamicTransfoImage">
-                            <img src="https://static.wixstatic.com/media/885b87_e29b40ae0d2a4606bc8844f510e97a42~mv2.jpg" alt="Transformation" class="transformation-photo">
-                        </div>
-                    </div>
-                    
-                    <button class="btn-primary" onclick="nextStep()">Continuer</button>
-                </div>
-            </div>
-
-            <!-- ÉTAPE 8 : NIVEAU SPORT -->
-            <div class="step" data-step="8">
-                <div class="step-content">
-                    <span class="step-label">Ton parcours</span>
-                    <h2>Où en es tu aujourd'hui avec le sport ?</h2>
-                    <p class="step-hint">Pas de jugement, chaque point de départ est valide.</p>
-                    <div class="options-grid single">
-                        <label class="option-card" data-value="debutante">
-                            <input type="radio" name="niveau_sport" value="debutante">
-                            <div class="option-content">
-                                <span class="option-icon">🌱</span>
-                                <span class="option-text">Je débute totalement</span>
-                                <span class="option-hint">C'est la première fois que je me lance sérieusement</span>
-                            </div>
-                        </label>
-                        <label class="option-card" data-value="irreguliere">
-                            <input type="radio" name="niveau_sport" value="irreguliere">
-                            <div class="option-content">
-                                <span class="option-icon">🔄</span>
-                                <span class="option-text">Je connais les bases mais je suis irrégulière</span>
-                                <span class="option-hint">J'ai du mal à tenir sur la durée</span>
-                            </div>
-                        </label>
-                        <label class="option-card" data-value="reguliere">
-                            <input type="radio" name="niveau_sport" value="reguliere">
-                            <div class="option-content">
-                                <span class="option-icon">💪</span>
-                                <span class="option-text">Je m'entraîne régulièrement</span>
-                                <span class="option-hint">Mais les résultats stagnent</span>
-                            </div>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ÉTAPE 9 : NUTRITION -->
-            <div class="step" data-step="9">
-                <div class="step-content">
-                    <span class="step-label">Ton alimentation</span>
-                    <h2>Comment te sens tu actuellement avec ton alimentation ?</h2>
-                    <p class="step-hint">L'alimentation représente environ 70% des résultats.</p>
-                    <div class="options-grid single">
-                        <label class="option-card" data-value="perdue">
-                            <input type="radio" name="niveau_nutrition" value="perdue">
-                            <div class="option-content">
-                                <span class="option-icon">❓</span>
-                                <span class="option-text">Je suis perdue</span>
-                                <span class="option-hint">Je ne sais pas quoi manger ni comment m'organiser</span>
-                            </div>
-                        </label>
-                        <label class="option-card" data-value="pas_resultats">
-                            <input type="radio" name="niveau_nutrition" value="pas_resultats">
-                            <div class="option-content">
-                                <span class="option-icon">🤔</span>
-                                <span class="option-text">Je mange "plutôt bien" mais aucun résultat</span>
-                                <span class="option-hint">J'ai l'impression de bien faire mais ça ne fonctionne pas</span>
-                            </div>
-                        </label>
-                        <label class="option-card" data-value="bonnes_bases">
-                            <input type="radio" name="niveau_nutrition" value="bonnes_bases">
-                            <div class="option-content">
-                                <span class="option-icon">🙂</span>
-                                <span class="option-text">J'ai de bonnes bases, j'aimerais optimiser</span>
-                            </div>
-                        </label>
-                        <label class="option-card" data-value="maitrise">
-                            <input type="radio" name="niveau_nutrition" value="maitrise">
-                            <div class="option-content">
-                                <span class="option-icon">✅</span>
-                                <span class="option-text">Je gère bien mon alimentation</span>
-                            </div>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ÉTAPE 10 : NIVEAU SALLE -->
-            <div class="step" data-step="10">
-                <div class="step-content">
-                    <span class="step-label">Ton expérience</span>
-                    <h2>Quel est ton niveau en salle de sport ?</h2>
-                    <p class="step-hint">Le programme s'adapte à la maison ou en salle.</p>
-                    <div class="options-grid single">
-                        <label class="option-card" data-value="debutante">
-                            <input type="radio" name="niveau_salle" value="debutante">
-                            <div class="option-content">
-                                <span class="option-icon">🌱</span>
-                                <span class="option-text">Débutante</span>
-                                <span class="option-hint">Je ne connais pas les machines ou exercices</span>
-                            </div>
-                        </label>
-                        <label class="option-card" data-value="intermediaire">
-                            <input type="radio" name="niveau_salle" value="intermediaire">
-                            <div class="option-content">
-                                <span class="option-icon">⭐</span>
-                                <span class="option-text">Intermédiaire</span>
-                                <span class="option-hint">Je connais les bases</span>
-                            </div>
-                        </label>
-                        <label class="option-card" data-value="avancee">
-                            <input type="radio" name="niveau_salle" value="avancee">
-                            <div class="option-content">
-                                <span class="option-icon">🏆</span>
-                                <span class="option-text">Avancée</span>
-                                <span class="option-hint">Je maîtrise bien les exercices</span>
-                            </div>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ÉTAPE 11 : BUDGET -->
-            <div class="step skip-if-pregnant skip-if-pp03" data-step="11">
-                <div class="step-content">
-                    <span class="step-label">Ton investissement</span>
-                    <h2>Pour obtenir des résultats durables, quel investissement mensuel es tu prête à faire ?</h2>
-                    <p class="step-hint">💡 Pour info : un abonnement salle de sport classique coûte 30 à 50€ par mois, sans programme ni méthode.</p>
-                    <div class="options-grid single">
-                        <label class="option-card" data-value="moins_40">
-                            <input type="radio" name="budget" value="moins_40">
-                            <div class="option-content"><span class="option-text">Moins de 40€ par mois</span></div>
-                        </label>
-                        <label class="option-card" data-value="40_59">
-                            <input type="radio" name="budget" value="40_59">
-                            <div class="option-content"><span class="option-text">40 à 59€ par mois</span></div>
-                        </label>
-                        <label class="option-card" data-value="60_plus">
-                            <input type="radio" name="budget" value="60_plus">
-                            <div class="option-content"><span class="option-text">60€ et plus par mois</span></div>
-                        </label>
-                        <label class="option-card" data-value="paiement_unique">
-                            <input type="radio" name="budget" value="paiement_unique">
-                            <div class="option-content"><span class="option-text">Je préfère un paiement unique</span></div>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ÉTAPE 12 : EMAIL -->
-            <div class="step" data-step="12">
-                <div class="step-content">
-                    <span class="step-label">Dernière étape</span>
-                    <h2>Où puis je t'envoyer ta recommandation personnalisée ?</h2>
-                    <p class="step-hint">Ton email reste confidentiel, il sert uniquement à t'envoyer ton résultat.</p>
-                    <div class="input-group single">
-                        <div class="input-field large">
-                            <input type="email" id="email" name="email" placeholder="ton.email@exemple.com" required>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ÉCRAN DE CHARGEMENT -->
-            <div class="step interstitial" data-step="loading">
-                <div class="step-content message-screen loading-screen">
-                    <h2>Merci <span id="loadingPrenom"></span> !</h2>
-                    <p class="message-text">Analyse de ton profil en cours...</p>
-                    <div class="loading-bar-container">
-                        <div class="loading-bar" id="loadingBar"></div>
-                    </div>
-                    <p class="loading-text" id="loadingText">Analyse des objectifs...</p>
-                </div>
-            </div>
-
-            <!-- PAGE RÉSULTAT -->
-            <div class="step result" data-step="result">
-                <div class="step-content result-screen">
-                    <button class="btn-back-result" id="btnBackResult" onclick="restartQuiz()">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-                        Modifier mes réponses
-                    </button>
-                    
-                    <div class="result-header">
-                        <span class="result-badge">🎯 Ta recommandation personnalisée</span>
-                        <h1><span id="resultPrenom"></span>, voici ce qui te correspond le mieux</h1>
-                    </div>
-                    
-                    <div class="result-image" id="resultImage"></div>
-
-                    <div class="result-card" id="resultCard">
-                        <div class="program-badge" id="programBadge">Recommandé pour toi</div>
-                        <h2 class="program-title" id="programTitle"></h2>
-                        <p class="program-subtitle" id="programSubtitle"></p>
-                        <div class="program-price" id="programPrice"></div>
-                    </div>
-                    
-                    <div class="result-message" id="resultMessage"></div>
-                    
-                    <div class="problematique-warning" id="problematiqueWarning" style="display:none;"></div>
-                    
-                    <div class="engagement-box" id="engagementBox" style="display:none;">
-                        <p>💪 <strong>Es tu prête à t'engager sérieusement ?</strong></p>
-                        <p>Ce programme fonctionne, les résultats de +4 000 élèves le prouvent. Mais il demande de l'engagement, de la régularité et de la discipline.</p>
-                        <p>Si tu veux des résultats sans effort, passe ton chemin. Si tu es prête à faire le travail, <strong>ta transformation commence maintenant.</strong></p>
-                    </div>
-
-                    <!-- Carrousel pour programmes sur app (MKC, JANA, Grossesse) -->
-                    <div class="features-carousel" id="featuresCarousel" style="display:none;">
-                        <div class="features-carousel-container">
-                            <div class="features-carousel-track" id="featuresTrack">
-                                <div class="feature-slide">
-                                    <h3>📱 Ton programme sur l'app MAKEACHAMP</h3>
-                                    <img src="https://static.wixstatic.com/media/885b87_b6bd96665ac14a1b85b2efa553884b14~mv2.gif" alt="Application" class="feature-img">
-                                    <p>Toutes tes séances, ta nutrition et ton suivi directement sur ton téléphone.</p>
-                                </div>
-                                <div class="feature-slide">
-                                    <h3>🥗 Nutrition incluse</h3>
-                                    <img src="https://static.wixstatic.com/media/885b87_8fd846824179461c8271b38c051fa58b~mv2.avif" alt="Nutrition" class="feature-img">
-                                    <ul>
-                                        <li>✅ +350 recettes équilibrées</li>
-                                        <li>✅ Outils pour calculer tes calories</li>
-                                        <li>✅ Approche sans régime, durable</li>
-                                    </ul>
-                                </div>
-                                <div class="feature-slide">
-                                    <h3>👯‍♀️ Communauté qui te soutient</h3>
-                                    <img src="https://static.wixstatic.com/media/885b87_208710712f724fd1958d16ec2d6d3645~mv2.avif" alt="Communauté" class="feature-img">
-                                    <p>Un forum privé où les élèves s'entraident et se motivent au quotidien.</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="carousel-dots" id="carouselDots">
-                            <span class="dot active" data-index="0"></span>
-                            <span class="dot" data-index="1"></span>
-                            <span class="dot" data-index="2"></span>
-                        </div>
-                        <div class="carousel-arrows">
-                            <button class="carousel-arrow prev" onclick="slideFeatures(-1)">‹</button>
-                            <button class="carousel-arrow next" onclick="slideFeatures(1)">›</button>
-                        </div>
-                    </div>
-
-                    <div class="result-cta-container" id="resultCtaContainer"></div>
-                    
-                    <div class="diagnostic-option" id="diagnosticOption" style="display:none;">
-                        <p class="diagnostic-intro">💡 <strong>Tu préfères un cadre nutritionnel 100% personnalisé ?</strong></p>
-                        <div class="diagnostic-details">
-                            <p>Ajoute le <strong>diagnostic nutritionnel</strong> réalisé par ta coach (livré sous 48 à 72h) :</p>
-                            <ul>
-                                <li>✅ Calcul précis de tes calories et macros</li>
-                                <li>✅ Analyse de tes habitudes actuelles</li>
-                                <li>✅ Meal plan 12 semaines personnalisé</li>
-                            </ul>
-                        </div>
-                        <a href="#" class="btn-secondary" id="diagnosticButton">Voir la formule avec diagnostic (+45€)</a>
-                    </div>
-
-                    <!-- Section Ebooks (petit budget) SANS carrousel app -->
-                    <div class="ebook-section" id="ebookSection" style="display:none;">
-                        <div class="ebook-intro">
-                            <p>😊 Avec ce budget, je te recommande de <strong>commencer par un de nos ebooks</strong> pour poser des bases solides. C'est un excellent premier pas !</p>
-                        </div>
-                        <div class="ebook-grid" id="ebookGrid"></div>
-                        <div class="ideal-program-box">
-                            <p class="ideal-intro">💫 <strong>Dommage...</strong> Ton programme idéal aurait été :</p>
-                            <p class="ideal-program" id="idealProgram"></p>
-                            <p class="ideal-note">Quand tu seras prête à passer au niveau supérieur, tu sais où nous trouver ! 💪</p>
-                        </div>
-                    </div>
-
-                    <div class="coach-signature-box">
-                        <img src="https://static.wixstatic.com/media/9b535b_fede84943229421db0547997156787dc~mv2.jpg" alt="Coach Sabrina Montoya" class="coach-avatar">
-                        <div class="coach-message">
-                            <p>Tu as fait le premier pas, et c'est souvent le plus difficile.</p>
-                            <p>On se retrouve très vite pour commencer ta transformation 💌</p>
-                            <p class="signature">— Coach Sabrina Montoya</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-        <div class="quiz-navigation" id="quizNavigation">
-            <button class="btn-secondary btn-back" id="btnBack" onclick="prevStep()">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-                Retour
-            </button>
-            <button class="btn-primary btn-next" id="btnNext" onclick="nextStep()">
-                Continuer
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </button>
-        </div>
-    </div>
-
-    <script src="quiz.js"></script>
-</body>
-</html>
+// INIT
+document.addEventListener('DOMContentLoaded', function() {
+    buildStepsOrder();
+    showStep(0);
+    initCarousel();
+    initOptionCards();
+    
+    document.querySelectorAll('#carouselDots .dot').forEach(dot => {
+        dot.addEventListener('click', function() {
+            currentFeatureSlide = parseInt(this.dataset.index);
+            updateFeaturesCarousel();
+        });
+    });
+    
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            const btnNext = document.getElementById('btnNext');
+            const nav = document.getElementById('quizNavigation');
+            if (btnNext && nav.style.display !== 'none') {
+                nextStep();
+            }
+        }
+    });
+});
