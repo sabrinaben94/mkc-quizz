@@ -34,7 +34,7 @@ const PROGRAMMES = {
         titre: 'MKC Transformation',
         sous_titre: 'Programme complet perte de gras et définition musculaire',
         lien_info: 'https://www.montoyacoaching.fr/pertedepoids',
-        lien_paiement: 'https://www.montoyacoaching.fr/',
+        lien_paiement: 'https://buy.stripe.com/14AfZgh2S9cj6x54mc3840g',
         prix: '195€',
         prix_mensuel: '48,75€/mois en 4x sans frais',
         image_light: 'https://static.wixstatic.com/media/885b87_a2f7d6f7352f4a22959411b5c8a90def~mv2.webp',
@@ -313,36 +313,59 @@ function populateDynamicContent() {
 function updateProgressionDisplay() {
     const poidsActuel = parseFloat(quizState.answers.poids_actuel) || 0;
     const poidsObjectif = parseFloat(quizState.answers.poids_objectif) || 0;
-    const deltaPoids = poidsActuel - poidsObjectif;
+    const objectif = quizState.answers.objectif_principal;
+    const isPriseMasse = objectif === 'prise_masse';
+    const deltaPoids = Math.abs(poidsObjectif - poidsActuel);
     const prenom = quizState.answers.prenom || '';
-    
+
     document.getElementById('prenomDisplay1').textContent = prenom;
     document.getElementById('poidsActuelDisplay').textContent = poidsActuel + ' kg';
     document.getElementById('poidsObjectifDisplay').textContent = poidsObjectif + ' kg';
-    
-    const minWeeks = Math.ceil(deltaPoids / 1.5);
-    const maxWeeks = Math.ceil(deltaPoids / 0.5);
-    const avgWeeks = Math.round((minWeeks + maxWeeks) / 2);
-    
-    document.getElementById('weeksEstimate').textContent = avgWeeks > 0 ? `${minWeeks} à ${maxWeeks}` : '8 à 12';
-    
-    drawProgressionChart(poidsActuel, poidsObjectif, avgWeeks);
-    
+
+    let weeksText = '8 à 12';
+    let messageProgression = '';
+
+    if (isPriseMasse) {
+        // Prise de masse : 0,1 à 0,3 kg/semaine réaliste
+        if (deltaPoids > 0) {
+            const minWeeks = Math.ceil(deltaPoids / 0.3);
+            const maxWeeks = Math.ceil(deltaPoids / 0.1);
+            const cappedMax = Math.min(maxWeeks, 52); // max 1 an affiché
+            weeksText = `${minWeeks} à ${cappedMax}`;
+        }
+        messageProgression = `💪 En prise de masse progressive (0,1 à 0,3 kg par semaine), tu peux atteindre ton objectif en <strong>${weeksText} semaines</strong> !`;
+    } else {
+        // Perte de poids / recomposition : 0,4 à 1,5 kg/semaine
+        if (deltaPoids > 0 && poidsActuel > poidsObjectif) {
+            const minWeeks = Math.ceil(deltaPoids / 1.5);
+            const maxWeeks = Math.ceil(deltaPoids / 0.4);
+            weeksText = `${minWeeks} à ${maxWeeks}`;
+        }
+        messageProgression = `💪 En perdant entre 0,4 kg et 1,5 kg par semaine, tu peux atteindre ton objectif en <strong>${weeksText} semaines</strong> !`;
+    }
+
+    const weeksEl = document.getElementById('weeksEstimate');
+    if (weeksEl) weeksEl.innerHTML = messageProgression;
+
+    drawProgressionChart(poidsActuel, poidsObjectif, parseInt(weeksText.split(' ')[0]) || 12, isPriseMasse);
+
     const imageContainer = document.getElementById('dynamicTransfoImage');
     let imageSrc = IMAGES_TRANSFORMATION.definition_light;
-    
-    if (deltaPoids > 10) {
-        imageSrc = IMAGES_TRANSFORMATION.perte_poids_heavy;
-    } else if (deltaPoids > 5) {
-        imageSrc = IMAGES_TRANSFORMATION.perte_poids_heavy_2;
+
+    if (!isPriseMasse) {
+        if (deltaPoids > 10) {
+            imageSrc = IMAGES_TRANSFORMATION.perte_poids_heavy;
+        } else if (deltaPoids > 5) {
+            imageSrc = IMAGES_TRANSFORMATION.perte_poids_heavy_2;
+        }
     }
-    
+
     if (imageContainer) {
         imageContainer.innerHTML = `<img src="${imageSrc}" alt="Transformation" class="transformation-photo">`;
     }
 }
 
-function drawProgressionChart(poidsActuel, poidsObjectif, weeks) {
+function drawProgressionChart(poidsActuel, poidsObjectif, weeks, isPriseMasse) {
     const canvas = document.getElementById('progressCanvas');
     if (!canvas) return;
     
@@ -357,15 +380,23 @@ function drawProgressionChart(poidsActuel, poidsObjectif, weeks) {
     const chartHeight = height - padding.top - padding.bottom;
     
     const numPoints = Math.min(weeks, 12) || 12;
-    const delta = poidsActuel - poidsObjectif;
+    const delta = Math.abs(poidsObjectif - poidsActuel);
     const points = [];
     
     for (let i = 0; i <= numPoints; i++) {
         const progress = i / numPoints;
-        const poids = poidsActuel - (delta * progress);
+        let poids;
+        if (isPriseMasse) {
+            poids = poidsActuel + (delta * progress); // courbe montante
+        } else {
+            poids = poidsActuel - (delta * progress); // courbe descendante
+        }
+        const minPoids = Math.min(poidsActuel, poidsObjectif);
+        const maxPoids = Math.max(poidsActuel, poidsObjectif);
+        const range = maxPoids - minPoids || 1;
         points.push({
             x: padding.left + (chartWidth * progress),
-            y: padding.top + chartHeight - (chartHeight * ((poids - poidsObjectif) / delta))
+            y: padding.top + chartHeight - (chartHeight * ((poids - minPoids) / range))
         });
     }
     
@@ -705,26 +736,59 @@ function buildResultMessage(recommendation) {
     if (recommendation.type === 'mkc_diag') {
         return `
             <p>${prenom}, d'après tes réponses, tu as besoin d'un cadre nutritionnel clair pour obtenir des résultats.</p>
-            <p>Le programme <strong>MKC Transformation + Diagnostic Nutritionnel</strong> inclut :</p>
+
+            <p>🎯 <strong>Objectifs du programme</strong></p>
             <ul>
-                <li>✅ Calcul précis de tes calories et macros par ta coach</li>
-                <li>✅ Analyse de tes habitudes alimentaires actuelles</li>
-                <li>✅ Meal plan personnalisé sur 12 semaines</li>
-                <li>✅ Programme sportif complet</li>
+                <li>✅ Perte de masse grasse</li>
+                <li>✅ Fessiers plus galbés</li>
+                <li>✅ Abdos plus dessinés</li>
+                <li>✅ Silhouette globalement plus définie</li>
+            </ul>
+
+            <p>📋 <strong>Contenu inclus</strong></p>
+            <ul>
+                <li>✅ Programme sportif structuré sur 12 semaines (13 semaines d'accès)</li>
+                <li>✅ 4 séances par semaine (adaptables à 3)</li>
+                <li>✅ Réalisable en salle ou à la maison</li>
+                <li>✅ +300 recettes rapides et équilibrées</li>
+            </ul>
+
+            <p>🥗 <strong>Diagnostic nutritionnel personnalisé</strong> <em>(sous réserve de places disponibles)</em></p>
+            <ul>
+                <li>✅ Calcul précis de tes calories et macros (protéines, glucides, lipides)</li>
+                <li>✅ Programme nutritionnel personnalisé par ta coach</li>
+                <li>✅ Analyse morphologique si tu fournis des photos</li>
             </ul>
             <p><em>Diagnostic livré sous 48 à 72h après inscription.</em></p>
+
+            <p><em>⚠️ Programme sans suivi personnalisé continu.</em></p>
         `;
     }
     
     return `
         <p>${prenom}, le programme <strong>MKC Transformation</strong> correspond à ton profil.</p>
-        <p>Tu vas pouvoir :</p>
+
+        <p>🎯 <strong>Objectifs du programme</strong></p>
         <ul>
-            <li>✅ Perdre du gras de façon durable</li>
-            <li>✅ Sculpter ta silhouette</li>
-            <li>✅ Suivre une méthode structurée qui fonctionne</li>
+            <li>✅ Perte de masse grasse</li>
+            <li>✅ Fessiers plus galbés</li>
+            <li>✅ Abdos plus dessinés</li>
+            <li>✅ Silhouette globalement plus définie</li>
         </ul>
-        <p>Tu gères déjà bien ta nutrition ? Parfait. Ce programme inclut tous les outils pour calculer toi même tes apports et les ajuster selon tes objectifs.</p>
+
+        <p>📋 <strong>Contenu inclus</strong></p>
+        <ul>
+            <li>✅ Programme sportif structuré sur 12 semaines (13 semaines d'accès, dont 1 semaine d'adaptation à l'app)</li>
+            <li>✅ Démarrage immédiat après achat</li>
+            <li>✅ 4 séances par semaine (adaptables à 3 selon tes disponibilités)</li>
+            <li>✅ Réalisable en salle ou à la maison</li>
+            <li>✅ Méthode nutritionnelle complète : calcul des calories, répartition protéines / glucides / lipides</li>
+            <li>✅ Accès à +300 recettes rapides et équilibrées</li>
+        </ul>
+
+        <p>🏠 <strong>Matériel à la maison</strong> : élastiques, bouteilles d'eau, haltères légers</p>
+
+        <p><em>⚠️ Programme sans suivi personnalisé. Tu gères ton parcours en autonomie avec tous les outils fournis.</em></p>
     `;
 }
 
