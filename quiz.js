@@ -326,22 +326,22 @@ function updateProgressionDisplay() {
     let messageProgression = '';
 
     if (isPriseMasse) {
-        // Prise de masse : 0,1 à 0,3 kg/semaine réaliste
+        // Prise de masse : 0,5 à 2,5 kg/mois = ~0,125 à 0,625 kg/semaine
         if (deltaPoids > 0) {
-            const minWeeks = Math.ceil(deltaPoids / 0.3);
-            const maxWeeks = Math.ceil(deltaPoids / 0.1);
-            const cappedMax = Math.min(maxWeeks, 52); // max 1 an affiché
+            const minWeeks = Math.ceil(deltaPoids / 0.625);
+            const maxWeeks = Math.ceil(deltaPoids / 0.125);
+            const cappedMax = Math.min(maxWeeks, 52);
             weeksText = `${minWeeks} à ${cappedMax}`;
         }
-        messageProgression = `💪 En prise de masse progressive (0,1 à 0,3 kg par semaine), tu peux atteindre ton objectif en <strong>${weeksText} semaines</strong> !`;
+        messageProgression = `💪 En prise de masse progressive (jusqu'à 2,5 kg/mois), tu peux atteindre ton objectif en <strong>${weeksText} semaines</strong> !`;
     } else {
-        // Perte de poids / recomposition : 0,4 à 1,5 kg/semaine
+        // Perte de poids : 0,5 à 2 kg/semaine
         if (deltaPoids > 0 && poidsActuel > poidsObjectif) {
-            const minWeeks = Math.ceil(deltaPoids / 1.5);
-            const maxWeeks = Math.ceil(deltaPoids / 0.4);
+            const minWeeks = Math.ceil(deltaPoids / 2);
+            const maxWeeks = Math.ceil(deltaPoids / 0.5);
             weeksText = `${minWeeks} à ${maxWeeks}`;
         }
-        messageProgression = `💪 En perdant entre 0,4 kg et 1,5 kg par semaine, tu peux atteindre ton objectif en <strong>${weeksText} semaines</strong> !`;
+        messageProgression = `💪 En perdant entre 0,5 kg et 2 kg par semaine, tu peux atteindre ton objectif en <strong>${weeksText} semaines</strong> !`;
     }
 
     const weeksEl = document.getElementById('weeksEstimate');
